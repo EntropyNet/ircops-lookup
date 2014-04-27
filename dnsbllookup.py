@@ -15,15 +15,18 @@ def lookup():
     # Let us reverse this address for the DNSBL lookup
     ip = request.form['ip']
     reversedaddress = reverse(ip)
-    query = reversedaddress + ".dnsbl.ircops.org"
+    compiledquery = reversedaddress + ".dnsbl.ircops.org"
     try:
-        dns.resolver.query(query, 'A')
+        dns.resolver.query(compiledquery, 'A')
         ipstatus = True
+        reason = dns.resolver.query(compiledquery, 'TXT')
+        for rdata in reason:
+            reasonoutput = str(rdata)
     except dns.resolver.NXDOMAIN:
         ipstatus = False
 
     if ipstatus is True:
-        output = ip + " is on the ircops DNSBL."
+        output = ip + " is on the ircops DNSBL. " + "Reason: " + reasonoutput
     else:
         output = ip + " is not on the ircops DNSBL."
 
@@ -33,4 +36,3 @@ def reverse(ip):
     splitlist = ip.split('.')[::-1]
     reversedaddress = '.'.join(splitlist)
     return reversedaddress
-
